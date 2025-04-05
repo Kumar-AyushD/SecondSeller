@@ -156,16 +156,22 @@ const ProductScreen = ({ match, history }) => {
                         Contact Information
                       </h4>
                       <div className="contact-info">
-                        {product?.contact?.phone_no && (
+                        {product?.seller?.phoneNo?.mobile && (
                           <div className="contact-item">
                             <i className="fas fa-phone text-primary"></i>
-                            <span>{product.contact.phone_no}</span>
+                            <span>{product.seller.phoneNo.mobile}</span>
                           </div>
                         )}
-                        {product?.contact?.email && (
+                        {product?.seller?.selleremail && (
                           <div className="contact-item">
                             <i className="fas fa-envelope text-primary"></i>
-                            <span>{product.contact.email}</span>
+                            <span>{product.seller.selleremail}</span>
+                          </div>
+                        )}
+                        {product?.seller?.selleraddress && (
+                          <div className="contact-item">
+                            <i className="fas fa-map-marker-alt text-primary"></i>
+                            <span>{product.seller.selleraddress}</span>
                           </div>
                         )}
                       </div>
