@@ -6,21 +6,24 @@ import Loader from "../components/Loader";
 import { createProduct } from "../actions/productActions";
 import { PRODUCT_CREATE_RESET } from "../types/productConstants";
 import { Link } from "react-router-dom";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { app } from '../firebase';
+import { CircularProgressbar } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
 
 const ProductCreateScreen = ({ history }) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
-  const [condition, setCondition] = useState("");
   const [price, setPrice] = useState("");
   const [negotiable, setNegotiable] = useState(false);
-  const [image1, setImage1] = useState("");
-  const [image2, setImage2] = useState("");
-  const [image3, setImage3] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  const [image, setImage] = useState("");
+  const [expiresOn, setExpiresOn] = useState(""); // Added
   const [address, setAddress] = useState("");
+  const [shippingCharge, setShippingCharge] = useState(""); // Added
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(null);
+  const [uploadError, setUploadError] = useState(null);
 
   const dispatch = useDispatch();
   const productCreate = useSelector((state) => state.productCreate);
@@ -33,21 +36,62 @@ const ProductCreateScreen = ({ history }) => {
     }
   }, [dispatch, history, success]);
 
+  const uploadFileHandler = async (e) => {
+    const file = e.target.files[0];
+    if (!file) {
+      setUploadError('Please select an image');
+      return;
+    }
+
+    setUploading(true);
+    setUploadError(null);
+
+    try {
+      const storage = getStorage(app);
+      const fileName = `${new Date().getTime()}-${file.name}`;
+      const storageRef = ref(storage, `images/${fileName}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(progress.toFixed(0));
+        },
+        (error) => {
+          setUploadError('Image upload failed');
+          setUploadProgress(null);
+          setUploading(false);
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+            setImage(downloadURL);
+            setUploadProgress(null);
+            setUploading(false);
+          });
+        }
+      );
+    } catch (err) {
+      setUploadError('Image upload failed');
+      setUploadProgress(null);
+      setUploading(false);
+    }
+  };
+
   const submitHandler = (e) => {
     e.preventDefault();
     dispatch(
-      createProduct({
+      createProduct(
         name,
+        image, // Changed to match backend param name
         description,
         category,
-        condition,
-        Cost: { price, negotiable },
-        image1,
-        image2,
-        image3,
-        contact: { phone, email },
+        expiresOn,
         address,
-      })
+        shippingCharge,
+        price,
+        negotiable
+      )
     );
   };
 
@@ -66,6 +110,7 @@ const ProductCreateScreen = ({ history }) => {
             <Card.Body className="p-4">
               {loading && <Loader />}
               {error && <Message variant="danger">{error}</Message>}
+              {uploadError && <Message variant="danger">{uploadError}</Message>}
 
               <Form onSubmit={submitHandler}>
                 <div className="form-section mb-4">
@@ -76,9 +121,7 @@ const ProductCreateScreen = ({ history }) => {
                   <Row>
                     <Col md={12}>
                       <Form.Group className="mb-3">
-                        <Form.Label className="text-light">
-                          Product Name
-                        </Form.Label>
+                        <Form.Label className="text-light">Product Name</Form.Label>
                         <Form.Control
                           type="text"
                           placeholder="Enter product name"
@@ -89,9 +132,7 @@ const ProductCreateScreen = ({ history }) => {
                     </Col>
                     <Col md={12}>
                       <Form.Group className="mb-3">
-                        <Form.Label className="text-light">
-                          Description
-                        </Form.Label>
+                        <Form.Label className="text-light">Description</Form.Label>
                         <Form.Control
                           as="textarea"
                           rows={4}
@@ -113,7 +154,7 @@ const ProductCreateScreen = ({ history }) => {
                           <option value="Electronics">Electronics</option>
                           <option value="Books">Books</option>
                           <option value="Fashion">Fashion</option>
-                          <option value="Home">Home & Living</option>
+                          <option value="Home & Living">Home & Living</option>
                           <option value="Sports">Sports</option>
                           <option value="Other">Other</option>
                         </Form.Control>
@@ -121,20 +162,12 @@ const ProductCreateScreen = ({ history }) => {
                     </Col>
                     <Col md={6}>
                       <Form.Group className="mb-3">
-                        <Form.Label className="text-light">
-                          Condition
-                        </Form.Label>
+                        <Form.Label className="text-light">Expires On</Form.Label>
                         <Form.Control
-                          as="select"
-                          value={condition}
-                          onChange={(e) => setCondition(e.target.value)}
-                        >
-                          <option value="">Select Condition</option>
-                          <option value="New">New</option>
-                          <option value="Like New">Like New</option>
-                          <option value="Good">Good</option>
-                          <option value="Fair">Fair</option>
-                        </Form.Control>
+                          type="date"
+                          value={expiresOn}
+                          onChange={(e) => setExpiresOn(e.target.value)}
+                        />
                       </Form.Group>
                     </Col>
                   </Row>
@@ -148,9 +181,7 @@ const ProductCreateScreen = ({ history }) => {
                   <Row>
                     <Col md={6}>
                       <Form.Group className="mb-3">
-                        <Form.Label className="text-light">
-                          Price (₹)
-                        </Form.Label>
+                        <Form.Label className="text-light">Price (₹)</Form.Label>
                         <Form.Control
                           type="number"
                           placeholder="Enter price"
@@ -176,46 +207,30 @@ const ProductCreateScreen = ({ history }) => {
                 <div className="form-section mb-4">
                   <h4 className="section-title mb-3">
                     <i className="fas fa-camera me-2 text-info"></i>
-                    Images
+                    Image
                   </h4>
                   <Row>
                     <Col md={12}>
                       <Form.Group className="mb-3">
-                        <Form.Label className="text-light">
-                          Primary Image URL
-                        </Form.Label>
+                        <Form.Label className="text-light">Product Image</Form.Label>
                         <Form.Control
-                          type="text"
-                          placeholder="Enter image URL"
-                          value={image1}
-                          onChange={(e) => setImage1(e.target.value)}
+                          type="file"
+                          onChange={uploadFileHandler}
+                          disabled={uploading}
                         />
-                      </Form.Group>
-                    </Col>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label className="text-light">
-                          Additional Image URL (Optional)
-                        </Form.Label>
-                        <Form.Control
-                          type="text"
-                          placeholder="Enter image URL"
-                          value={image2}
-                          onChange={(e) => setImage2(e.target.value)}
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label className="text-light">
-                          Additional Image URL (Optional)
-                        </Form.Label>
-                        <Form.Control
-                          type="text"
-                          placeholder="Enter image URL"
-                          value={image3}
-                          onChange={(e) => setImage3(e.target.value)}
-                        />
+                        {uploading && uploadProgress && (
+                          <div className="d-flex justify-content-center my-3">
+                            <div style={{ width: '60px', height: '60px' }}>
+                              <CircularProgressbar
+                                value={uploadProgress || 0}
+                                text={`${uploadProgress || 0}%`}
+                              />
+                            </div>
+                          </div>
+                        )}
+                        {image && !uploading && (
+                          <img src={image} alt="Preview" className="mt-2" style={{ maxHeight: '150px' }} />
+                        )}
                       </Form.Group>
                     </Col>
                   </Row>
@@ -224,41 +239,28 @@ const ProductCreateScreen = ({ history }) => {
                 <div className="form-section mb-4">
                   <h4 className="section-title mb-3">
                     <i className="fas fa-address-card me-2 text-warning"></i>
-                    Contact Information
+                    Shipping Information
                   </h4>
                   <Row>
                     <Col md={6}>
                       <Form.Group className="mb-3">
-                        <Form.Label className="text-light">
-                          Phone Number
-                        </Form.Label>
+                        <Form.Label className="text-light">Shipping Address</Form.Label>
                         <Form.Control
-                          type="tel"
-                          placeholder="Enter phone number"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
+                          type="text"
+                          placeholder="Enter shipping address"
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
                         />
                       </Form.Group>
                     </Col>
                     <Col md={6}>
                       <Form.Group className="mb-3">
-                        <Form.Label className="text-light">Email</Form.Label>
+                        <Form.Label className="text-light">Shipping Charge (₹)</Form.Label>
                         <Form.Control
-                          type="email"
-                          placeholder="Enter email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={12}>
-                      <Form.Group className="mb-3">
-                        <Form.Label className="text-light">Address</Form.Label>
-                        <Form.Control
-                          type="text"
-                          placeholder="Enter your address"
-                          value={address}
-                          onChange={(e) => setAddress(e.target.value)}
+                          type="number"
+                          placeholder="Enter shipping charge"
+                          value={shippingCharge}
+                          onChange={(e) => setShippingCharge(e.target.value)}
                         />
                       </Form.Group>
                     </Col>
@@ -269,9 +271,9 @@ const ProductCreateScreen = ({ history }) => {
                   type="submit"
                   variant="primary"
                   className="w-100 py-3 mt-4"
-                  disabled={loading}
+                  disabled={loading || uploading}
                 >
-                  {loading ? (
+                  {loading || uploading ? (
                     <>
                       <span
                         className="spinner-border spinner-border-sm me-2"
