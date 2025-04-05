@@ -42,7 +42,7 @@ const Header = () => {
                 <NavDropdown
                   title={
                     <span>
-                      <i className="fas fa-user-circle me-2"></i>
+                      <i className="fas fa-user-circle me-2 p-2"></i>
                       {userData.name}
                       {userData.isAdmin && (
                         <Badge bg="success" className="ms-2">Admin</Badge>

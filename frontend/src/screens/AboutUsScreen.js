@@ -1,56 +1,127 @@
-import React from 'react'
-import { Row, Col, Button } from 'react-bootstrap'
+import React from "react";
+import { Container, Row, Col, Card } from "react-bootstrap";
+import Meta from "../components/Meta";
 
 const AboutUsScreen = () => {
   return (
-    <div className='aboutbody'>
-      <Row>
-        <Col md={3}></Col>
-        <Col md={6} className='aboutpage'>
-          <h1>Who are We?</h1>
-          <p>
-            Actually We are not any professionals. This website has been created
-            for the purpose of aiding students for buying and selling the notes
-            and other items that they no longer need which might be useful for
-            other new students. We take no charge for this. What we do is just
-            aid in establishing the communication between buyer and seller.These
-            can include: notes, drawing instruments, utensils & furnitures
-            specially by students who are on the verge of leaving campus sooner
-            or later.
-          </p>
-        </Col>
-        <Col md={3}></Col>
-      </Row>
-      <Row>
-        <Col md={3}></Col>
-        <Col md={6} className='aboutpage1'>
-          <h1>Developer</h1>
-          <p>
-            Designed and developed by{' '}
-            <a href='https://upendradhamala.com.np' target='_blank'>
-              Upendra Dhamala
-            </a>{' '}
-          </p>
-          <h3>Who am I?</h3>
-          <p>
-            I am Upendra Dhamala. I am a native resident of Achham, Nepal. I am
-            currently studying Computer Engineering(final year) at IOE, WRC
-            Pokhara. There might be some bugs in this website as I am not any
-            professional and currently a web developer in making.
-          </p>
-          <h3>Contact Details</h3>
-          <i className='fas fa-phone'></i> 9864421289
-          <br />
-          <i className='fas fa-envelope-square'></i>{' '}
-          <a target='_blank' href={`mailto:dhamalaupendra@gmail.com`}>
-            dhamalaupendra@gmail.com
-          </a>
-          <br />
-        </Col>
-        <Col md={3}></Col>
-      </Row>
-    </div>
-  )
-}
+    <Container className="py-5">
+      <Meta title="About Us" />
 
-export default AboutUsScreen
+      <div className="text-center mb-5">
+        <h1 className="display-4 fw-bold text-gradient mb-4">
+          About SecondSeller
+        </h1>
+        <p className="lead text-secondary mb-0">
+          Your trusted marketplace for premium second-hand items
+        </p>
+      </div>
+
+      <Row className="g-4 mb-5">
+        <Col md={4}>
+          <Card className="feature-card h-100 border-0 shadow-lg">
+            <Card.Body className="p-4 text-center">
+              <div className="feature-icon-wrapper mb-4">
+                <i className="fas fa-handshake"></i>
+              </div>
+              <h3 className="h4 mb-3">Our Mission</h3>
+              <p className="text-secondary mb-0">
+                To create a trusted community marketplace where quality meets
+                affordability
+              </p>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        <Col md={4}>
+          <Card className="feature-card h-100 border-0 shadow-lg">
+            <Card.Body className="p-4 text-center">
+              <div className="feature-icon-wrapper mb-4">
+                <i className="fas fa-bullseye"></i>
+              </div>
+              <h3 className="h4 mb-3">Our Vision</h3>
+              <p className="text-secondary mb-0">
+                To revolutionize the way people buy and sell second-hand items
+              </p>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        <Col md={4}>
+          <Card className="feature-card h-100 border-0 shadow-lg">
+            <Card.Body className="p-4 text-center">
+              <div className="feature-icon-wrapper mb-4">
+                <i className="fas fa-heart"></i>
+              </div>
+              <h3 className="h4 mb-3">Our Values</h3>
+              <p className="text-secondary mb-0">
+                Trust, Quality, and Customer Satisfaction drive everything we do
+              </p>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row className="align-items-center g-5">
+        <Col lg={6}>
+          <div className="about-content">
+            <h2 className="section-title mb-4">
+              <i className="fas fa-users me-3 text-primary"></i>
+              Who We Are
+            </h2>
+            <p className="text-secondary mb-4">
+              SecondSeller is a premier online marketplace dedicated to
+              connecting buyers and sellers of high-quality second-hand items.
+              We believe in giving products a second life while helping our
+              users find great deals.
+            </p>
+            {/* <div className="stats-grid">
+              <div className="stat-item">
+                <h3 className="stat-number text-primary">1000+</h3>
+                <p className="stat-label">Active Users</p>
+              </div>
+              <div className="stat-item">
+                <h3 className="stat-number text-primary">5000+</h3>
+                <p className="stat-label">Items Listed</p>
+              </div>
+              <div className="stat-item">
+                <h3 className="stat-number text-primary">98%</h3>
+                <p className="stat-label">Satisfaction Rate</p>
+              </div>
+            </div> */}
+          </div>
+        </Col>
+
+        <Col lg={6}>
+          <Card className="border-0 shadow-lg overflow-hidden">
+            <Card.Body className="p-4">
+              <h2 className="section-title mb-4">
+                <i className="fas fa-shield-alt me-3 text-success"></i>
+                Our Guarantee
+              </h2>
+              <div className="guarantee-list">
+                <div className="guarantee-item">
+                  <i className="fas fa-check-circle text-success"></i>
+                  <span>Verified Sellers</span>
+                </div>
+                <div className="guarantee-item">
+                  <i className="fas fa-check-circle text-success"></i>
+                  <span>Quality Assurance</span>
+                </div>
+                <div className="guarantee-item">
+                  <i className="fas fa-check-circle text-success"></i>
+                  <span>Secure Transactions</span>
+                </div>
+                <div className="guarantee-item">
+                  <i className="fas fa-check-circle text-success"></i>
+                  <span>24/7 Support</span>
+                </div>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
+  );
+};
+
+export default AboutUsScreen;
